@@ -115,8 +115,7 @@ def scrape(search_term, page_limit=11):
 
 
 if __name__ == "__main__":
-    # query = "search_term"
-    query = "lawhore"
+    query = "search_term"
     folder = str(date.today())
     res = scrape(query)
     create_folder(folder)
