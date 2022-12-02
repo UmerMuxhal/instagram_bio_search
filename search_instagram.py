@@ -1,22 +1,11 @@
 import requests
 import re
 import os
-import json
 import pandas as pd
 from datetime import date
+from dotenv import load_dotenv
 
-
-def get_credentials(filename="credentials.json"):
-    try:
-        with open(filename) as json_file:
-            creds = json.load(json_file)
-            api_key = creds.get("API_KEY")
-            search_engine_id = creds.get("SEARCH_ENGINE_ID")
-    except Exception as e:
-        print(e)
-        api_key = None
-        search_engine_id = None
-    return api_key, search_engine_id
+load_dotenv(dotenv_path=os.path.dirname(__file__) + "/.env")
 
 
 def raise_exception(var, msg):
@@ -24,7 +13,7 @@ def raise_exception(var, msg):
         raise ValueError(msg)
 
 
-API_KEY, SEARCH_ENGINE_ID = get_credentials()
+API_KEY, SEARCH_ENGINE_ID = os.environ["API_KEY"], os.environ["SEARCH_ENGINE_ID"]
 raise_exception(API_KEY, "API_KEY not provided")
 raise_exception(SEARCH_ENGINE_ID, "SEARCH_ENGINE_ID not provided")
 
@@ -37,13 +26,14 @@ def create_folder(folder=str(date.today()), dir=False):
 
     if not os.path.exists(folder):
         os.makedirs(folder)
+    return folder
 
 
-def create_csv(data, folder_name=str(date.today()), file=str(date.today()), file_type="csv"):
+def create_csv(data, dir, file=str(date.today()), file_type="csv"):
     header = list(data[0].keys())
     df = pd.DataFrame(data)
 
-    file_name = os.getcwd() + "\\" + folder_name + "\\" + file + "." + file_type
+    file_name = dir + "\\" + file + "." + file_type
     if file_type == "csv":
         df.to_csv(file_name, encoding='utf-8', index=False, header=header)
     elif file_type == "xlsx":
@@ -115,9 +105,8 @@ def scrape(search_term, page_limit=11):
 
 
 if __name__ == "__main__":
-    query = "search_term"
-    folder = str(date.today())
+    query = "lhr"
     res = scrape(query)
-    create_folder(folder)
-    query = query.replace("\n", "-")
-    create_csv(res, folder, file=query, file_type="csv")
+    directory = create_folder(dir="response")
+    query = query.replace("\n", "-").replace(":", "")
+    create_csv(res, directory, file=query, file_type="csv")
